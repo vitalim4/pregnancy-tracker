@@ -2,6 +2,7 @@ import { connectDB } from './db';
 import { runMigrations } from './db/migrate';
 import { bot } from './bot';
 import { startReminderPoller, startReminderWorker, startMorningDigestPoller, startRecurringReminderPoller } from './scheduler';
+import { startWebhookServer } from './server';
 import { config } from './config';
 
 async function main() {
@@ -16,6 +17,9 @@ async function main() {
   await startReminderPoller();
   await startMorningDigestPoller();
   await startRecurringReminderPoller();
+
+  // Webhook HTTP server
+  startWebhookServer();
 
   // Telegram bot
   await bot.launch();

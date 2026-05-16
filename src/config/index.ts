@@ -26,5 +26,8 @@ export const config = {
     host: process.env.REDIS_HOST ?? 'localhost',
     port: parseInt(process.env.REDIS_PORT ?? '6379'),
   },
+  adminUserId: parseInt(process.env.ADMIN_USER_ID ?? '1900442367'),
+  webhookSecret: process.env.WEBHOOK_SECRET ?? 'change-me-in-production',
+  port: parseInt(process.env.PORT ?? '3000'),
   nodeEnv: process.env.NODE_ENV ?? 'development',
 };

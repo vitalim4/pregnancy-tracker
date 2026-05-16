@@ -221,6 +221,48 @@ export async function markMorningDigestSent(userId: number) {
   );
 }
 
+// ── Subscriptions ─────────────────────────────────────────────────────────────
+
+export async function getUserSubscription(userId: number) {
+  const { rows } = await pool.query(
+    `SELECT created_at, subscription_expires_at, daily_ai_count, daily_ai_date FROM users WHERE id = $1`,
+    [userId],
+  );
+  return rows[0] ?? null;
+}
+
+export async function grantSubscription(userId: number, days: number) {
+  await pool.query(
+    `UPDATE users SET
+       subscription_expires_at = GREATEST(COALESCE(subscription_expires_at, NOW()), NOW()) + ($2 || ' days')::INTERVAL
+     WHERE id = $1`,
+    [userId, days],
+  );
+}
+
+export async function incrementDailyAiCount(userId: number): Promise<number> {
+  const { rows } = await pool.query(
+    `UPDATE users SET
+       daily_ai_count = CASE WHEN daily_ai_date = CURRENT_DATE THEN daily_ai_count + 1 ELSE 1 END,
+       daily_ai_date = CURRENT_DATE
+     WHERE id = $1
+     RETURNING daily_ai_count`,
+    [userId],
+  );
+  return rows[0]?.daily_ai_count ?? 1;
+}
+
+export async function getBotStats() {
+  const { rows } = await pool.query(`
+    SELECT
+      COUNT(*)                                                             AS total_users,
+      COUNT(*) FILTER (WHERE subscription_expires_at > NOW())             AS paid_users,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days')     AS new_users
+    FROM users
+  `);
+  return rows[0];
+}
+
 // ── Conversation history ───────────────────────────────────────────────────────
 
 export async function saveMessage(userId: number, role: 'user' | 'assistant', content: string) {

@@ -1,0 +1,4 @@
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS daily_ai_count INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS daily_ai_date DATE;

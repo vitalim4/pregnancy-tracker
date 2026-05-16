@@ -1,14 +1,27 @@
 import { Telegraf, Context } from 'telegraf';
 import { config } from '../config';
-import { upsertUser, getActivePregnancy, getCurrentWeek } from '../db/queries';
+import { upsertUser, getActivePregnancy, getCurrentWeek, getUserSubscription, incrementDailyAiCount } from '../db/queries';
 import { handleStart } from './handlers/start';
 import { handleWeek } from './handlers/week';
 import { handleTasks, handleAddTask, handleDoneTask } from './handlers/tasks';
 import { handleReminders, handleAddReminder, handleMorningDigest, sendCalendarLinks } from './handlers/reminders';
 import { handleOnboarding } from './middleware/onboarding';
+import { handleGrant, handleStats } from './handlers/admin';
+import { checkSubscription, getAccessStatus, FREE_AI_LIMIT, PAID_AI_LIMIT } from './middleware/subscription';
 import { chat } from '../agent';
 
 export const bot = new Telegraf(config.telegram.token);
+
+// ── Global subscription gate (skip /start and /subscribe) ─────────────────────
+
+bot.use(async (ctx, next) => {
+  const text = (ctx.message as any)?.text ?? '';
+  if (text === '/start' || text.startsWith('/subscribe')) return next();
+  if (!ctx.from) return next();
+  const allowed = await checkSubscription(ctx);
+  if (!allowed) return;
+  return next();
+});
 
 // ── Commands ───────────────────────────────────────────────────────────────────
 
@@ -23,6 +36,21 @@ bot.command('done', handleDoneTask);
 bot.command('reminders', handleReminders);
 bot.command('remind', handleAddReminder);
 bot.command('morning', handleMorningDigest);
+
+bot.command('subscribe', async (ctx) => {
+  await ctx.reply(
+    `💳 *מנוי חודשי – ₪19.90*\n\n` +
+    `✅ שיחה עם AI ללא הגבלה\n` +
+    `✅ תזכורות חכמות\n` +
+    `✅ מעקב בדיקות ומשימות\n` +
+    `✅ עדכון בוקר יומי\n\n` +
+    `קישור לתשלום יישלח בקרוב 🙏`,
+    { parse_mode: 'Markdown' },
+  );
+});
+
+bot.command('grant', handleGrant);
+bot.command('stats', handleStats);
 
 bot.command('help', async (ctx) => {
   await ctx.reply(
@@ -66,6 +94,23 @@ bot.on('text', async (ctx) => {
       : undefined,
     babyNickname: pregnancy?.nickname ?? undefined,
   };
+
+  // Daily AI message limit
+  if (userId !== config.adminUserId) {
+    const sub = await getUserSubscription(userId);
+    if (sub) {
+      const { aiLimit, isPaid } = getAccessStatus(sub);
+      const count = await incrementDailyAiCount(userId);
+      if (count > aiLimit) {
+        await ctx.reply(
+          isPaid
+            ? `הגעת למגבלת ${PAID_AI_LIMIT} הודעות AI ליום. המגבלה תתאפס מחר! 🌙`
+            : `הגעת למגבלת ${FREE_AI_LIMIT} הודעות AI ליום.\nשדרגי למנוי לקבל ${PAID_AI_LIMIT} הודעות ביום: /subscribe`,
+        );
+        return;
+      }
+    }
+  }
 
   try {
     const result = await chat(ctx.message.text, agentCtx);
