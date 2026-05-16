@@ -1,0 +1,1 @@
+ALTER TABLE pregnancies ADD COLUMN IF NOT EXISTS bag_checklist_sent BOOLEAN DEFAULT FALSE;

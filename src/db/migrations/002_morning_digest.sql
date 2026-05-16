@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS morning_digest_enabled BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS morning_digest_hour INT DEFAULT 8;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS morning_digest_sent_date DATE;

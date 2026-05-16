@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nodemon", "--watch", "src", "--ext", "ts", "--exec", "ts-node src/index.ts"],
+      "port": 3000
+    }
+  ]
+}

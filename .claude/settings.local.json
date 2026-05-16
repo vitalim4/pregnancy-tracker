@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init -y)",
+      "Bash(npm install telegraf @anthropic-ai/sdk pg dotenv bullmq ioredis date-fns)",
+      "Bash(npm install -D typescript @types/node @types/pg ts-node nodemon)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npx nodemon --version)"
+    ]
+  }
+}
