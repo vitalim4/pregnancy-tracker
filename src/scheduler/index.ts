@@ -27,7 +27,9 @@ async function safeSend(userId: number, text: string, extra?: any): Promise<bool
 }
 
 // Pass plain options so BullMQ uses its own bundled ioredis
-const connection = { host: config.redis.host, port: config.redis.port, maxRetriesPerRequest: null as null };
+const connection = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL, maxRetriesPerRequest: null as null }
+  : { host: config.redis.host, port: config.redis.port, maxRetriesPerRequest: null as null };
 
 const QUEUE_NAME = 'reminders';
 
