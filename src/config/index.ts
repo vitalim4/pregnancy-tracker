@@ -28,7 +28,7 @@ export const config = {
   },
   adminUserId: parseInt(process.env.ADMIN_USER_ID ?? '1900442367'),
   webhookSecret: process.env.WEBHOOK_SECRET ?? 'change-me-in-production',
-  port: parseInt(process.env.PORT ?? '3000'),
+  port: parseInt(process.env.PORT ?? '8080'),
   appUrl: (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, ''),
   paypal: {
     clientId: process.env.PAYPAL_CLIENT_ID ?? '',
