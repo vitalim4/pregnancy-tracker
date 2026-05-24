@@ -268,7 +268,7 @@ export async function getBotStats() {
 export async function getUsersDueRenewalReminder() {
   const { rows } = await pool.query(`
     SELECT id FROM users
-    WHERE subscription_expires_at BETWEEN NOW() + INTERVAL '2 days' AND NOW() + INTERVAL '3 days'
+    WHERE subscription_expires_at BETWEEN NOW() + INTERVAL '1 day' AND NOW() + INTERVAL '2 days'
       AND (renewal_reminder_sent_at IS NULL OR renewal_reminder_sent_at < NOW() - INTERVAL '25 days')
   `);
   return rows as { id: number }[];

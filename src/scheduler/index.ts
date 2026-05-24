@@ -164,7 +164,7 @@ export async function startRenewalReminderPoller(): Promise<void> {
       const users = await getUsersDueRenewalReminder();
       for (const user of users) {
         await safeSend(user.id,
-          `⏰ המנוי שלך פג בעוד 3 ימים!\n\nכדי להמשיך ליהנות מהעוזרת האישית שלך, חדשי את המנוי:\n/subscribe`,
+          `⏰ המנוי שלך פג בעוד יומיים!\n\nכדי להמשיך ליהנות מהעוזרת האישית שלך, חדשי את המנוי:\n/subscribe`,
         );
         await markRenewalReminderSent(user.id);
       }
