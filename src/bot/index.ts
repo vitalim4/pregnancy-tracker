@@ -46,14 +46,13 @@ bot.command('subscribe', async (ctx) => {
     const { orderId, approvalUrl } = await createPayPalOrder(userId);
     await savePendingOrder(orderId, userId);
     await ctx.reply(
-      `💳 *מנוי חודשי – ₪19.90*\n\n` +
+      `💳 מנוי חודשי – ₪19.90\n\n` +
       `✅ שיחה עם AI ללא הגבלה\n` +
       `✅ תזכורות חכמות\n` +
       `✅ מעקב בדיקות ומשימות\n` +
       `✅ עדכון בוקר יומי\n\n` +
-      `👉 [לחצי כאן לתשלום מאובטח](${approvalUrl})\n\n` +
+      `👉 ${approvalUrl}\n\n` +
       `לאחר התשלום תקבלי אישור כאן בטלגרם 💕`,
-      { parse_mode: 'Markdown' },
     );
   } catch (err) {
     console.error('Subscribe error:', err);
