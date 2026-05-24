@@ -8,6 +8,8 @@ async function getAccessToken(): Promise<string> {
     body: 'grant_type=client_credentials',
   });
   const data = await res.json() as any;
+  console.log('PayPal auth response:', JSON.stringify(data));
+  if (!data.access_token) throw new Error(`PayPal auth failed: ${JSON.stringify(data)}`);
   return data.access_token;
 }
 
