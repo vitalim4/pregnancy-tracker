@@ -27,8 +27,10 @@ export async function createPayPalOrder(userId: number): Promise<{ orderId: stri
     }),
   });
   const data = await res.json() as any;
+  console.log('PayPal create order response:', JSON.stringify(data));
   const orderId = data.id;
-  const approvalUrl = data.links.find((l: any) => l.rel === 'approve').href;
+  const approvalUrl = data.links?.find((l: any) => l.rel === 'approve')?.href;
+  if (!orderId || !approvalUrl) throw new Error(`PayPal order failed: ${JSON.stringify(data)}`);
   return { orderId, approvalUrl };
 }
 
