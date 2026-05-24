@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS renewal_reminder_sent_at TIMESTAMPTZ;

@@ -1,7 +1,7 @@
 import { connectDB } from './db';
 import { runMigrations } from './db/migrate';
 import { bot } from './bot';
-import { startReminderPoller, startReminderWorker, startMorningDigestPoller, startRecurringReminderPoller } from './scheduler';
+import { startReminderPoller, startReminderWorker, startMorningDigestPoller, startRecurringReminderPoller, startRenewalReminderPoller } from './scheduler';
 import { startWebhookServer } from './server';
 import { config } from './config';
 
@@ -17,6 +17,7 @@ async function main() {
   await startReminderPoller();
   await startMorningDigestPoller();
   await startRecurringReminderPoller();
+  await startRenewalReminderPoller();
 
   // Webhook HTTP server
   startWebhookServer();

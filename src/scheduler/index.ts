@@ -1,6 +1,6 @@
 import { Queue, Worker } from 'bullmq';
 import { config } from '../config';
-import { getPendingReminders, markReminderSent, getUsersDueMorningDigest, markMorningDigestSent, getTasks, getActivePregnancy, getCurrentWeek, getCompletedTests, markBagChecklistSent, getDueRecurringReminders, advanceRecurringReminder, deactivateAllUserReminders } from '../db/queries';
+import { getPendingReminders, markReminderSent, getUsersDueMorningDigest, markMorningDigestSent, getTasks, getActivePregnancy, getCurrentWeek, getCompletedTests, markBagChecklistSent, getDueRecurringReminders, advanceRecurringReminder, deactivateAllUserReminders, getUsersDueRenewalReminder, markRenewalReminderSent } from '../db/queries';
 import { getWeekData } from '../content/weeklyData';
 import { getUpcomingTests } from '../content/pregnancyTests';
 import { hospitalBagChecklist } from '../content/hospitalBag';
@@ -156,4 +156,24 @@ export async function startMorningDigestPoller(): Promise<void> {
   await poll();
   setInterval(poll, 60 * 1000);
   console.log('✅ Morning digest poller started');
+}
+
+export async function startRenewalReminderPoller(): Promise<void> {
+  async function poll() {
+    try {
+      const users = await getUsersDueRenewalReminder();
+      for (const user of users) {
+        await safeSend(user.id,
+          `⏰ המנוי שלך פג בעוד 3 ימים!\n\nכדי להמשיך ליהנות מהעוזרת האישית שלך, חדשי את המנוי:\n/subscribe`,
+        );
+        await markRenewalReminderSent(user.id);
+      }
+    } catch (err) {
+      console.error('Renewal reminder poller error:', err);
+    }
+  }
+
+  await poll();
+  setInterval(poll, 60 * 60 * 1000); // check every hour
+  console.log('✅ Renewal reminder poller started');
 }
