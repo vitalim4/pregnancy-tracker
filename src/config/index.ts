@@ -33,7 +33,9 @@ export const config = {
   paypal: {
     clientId: process.env.PAYPAL_CLIENT_ID ?? '',
     clientSecret: process.env.PAYPAL_CLIENT_SECRET ?? '',
-    baseUrl: 'https://api-m.paypal.com',
+    baseUrl: process.env.PAYPAL_SANDBOX === 'true'
+      ? 'https://api-m.sandbox.paypal.com'
+      : 'https://api-m.paypal.com',
   },
   nodeEnv: process.env.NODE_ENV ?? 'development',
 };
