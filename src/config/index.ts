@@ -12,8 +12,11 @@ export const config = {
     token: required('TELEGRAM_BOT_TOKEN'),
   },
   anthropic: {
-    apiKey: required('ANTHROPIC_API_KEY'),
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
     model: 'claude-sonnet-4-6',
+  },
+  gemini: {
+    apiKey: required('GEMINI_API_KEY'),
   },
   db: {
     host: process.env.DB_HOST ?? 'localhost',
