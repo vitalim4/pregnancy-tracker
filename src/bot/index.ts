@@ -8,6 +8,8 @@ import { handleReminders, handleAddReminder, handleMorningDigest, sendCalendarLi
 import { handleOnboarding } from './middleware/onboarding';
 import { handleGrant, handleStats } from './handlers/admin';
 import { checkSubscription, getAccessStatus, FREE_AI_LIMIT, PAID_AI_LIMIT } from './middleware/subscription';
+import { createPayPalOrder } from '../services/paypal';
+import { savePendingOrder } from '../db/queries';
 import { chat } from '../agent';
 
 export const bot = new Telegraf(config.telegram.token);
@@ -38,15 +40,25 @@ bot.command('remind', handleAddReminder);
 bot.command('morning', handleMorningDigest);
 
 bot.command('subscribe', async (ctx) => {
-  await ctx.reply(
-    `💳 *מנוי חודשי – ₪19.90*\n\n` +
-    `✅ שיחה עם AI ללא הגבלה\n` +
-    `✅ תזכורות חכמות\n` +
-    `✅ מעקב בדיקות ומשימות\n` +
-    `✅ עדכון בוקר יומי\n\n` +
-    `קישור לתשלום יישלח בקרוב 🙏`,
-    { parse_mode: 'Markdown' },
-  );
+  const userId = ctx.from.id;
+  try {
+    await ctx.sendChatAction('typing');
+    const { orderId, approvalUrl } = await createPayPalOrder(userId);
+    await savePendingOrder(orderId, userId);
+    await ctx.reply(
+      `💳 *מנוי חודשי – ₪19.90*\n\n` +
+      `✅ שיחה עם AI ללא הגבלה\n` +
+      `✅ תזכורות חכמות\n` +
+      `✅ מעקב בדיקות ומשימות\n` +
+      `✅ עדכון בוקר יומי\n\n` +
+      `👉 [לחצי כאן לתשלום מאובטח](${approvalUrl})\n\n` +
+      `לאחר התשלום תקבלי אישור כאן בטלגרם 💕`,
+      { parse_mode: 'Markdown' },
+    );
+  } catch (err) {
+    console.error('Subscribe error:', err);
+    await ctx.reply('אופס, משהו השתבש. נסי שוב בעוד רגע. 🙏');
+  }
 });
 
 bot.command('grant', handleGrant);

@@ -263,6 +263,24 @@ export async function getBotStats() {
   return rows[0];
 }
 
+// ── PayPal orders ──────────────────────────────────────────────────────────────
+
+export async function savePendingOrder(orderId: string, userId: number) {
+  await pool.query(
+    `INSERT INTO paypal_orders (order_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+    [orderId, userId],
+  );
+}
+
+export async function getPendingOrder(orderId: string): Promise<number | null> {
+  const { rows } = await pool.query(`SELECT user_id FROM paypal_orders WHERE order_id = $1`, [orderId]);
+  return rows[0]?.user_id ?? null;
+}
+
+export async function deletePendingOrder(orderId: string) {
+  await pool.query(`DELETE FROM paypal_orders WHERE order_id = $1`, [orderId]);
+}
+
 // ── Conversation history ───────────────────────────────────────────────────────
 
 export async function saveMessage(userId: number, role: 'user' | 'assistant', content: string) {
