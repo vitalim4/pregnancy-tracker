@@ -1,6 +1,6 @@
 import http from 'http';
 import { config } from '../config';
-import { grantSubscription, getPendingOrder, deletePendingOrder } from '../db/queries';
+import { grantSubscription, getPendingOrder, deletePendingOrder, getNextReceiptNumber } from '../db/queries';
 import { capturePayPalOrder } from '../services/paypal';
 import { bot } from '../bot';
 
@@ -19,7 +19,22 @@ export function startWebhookServer(): void {
         if (captured) {
           await grantSubscription(userId, 30);
           await deletePendingOrder(orderId);
-          await bot.telegram.sendMessage(userId, `✅ התשלום התקבל! המנוי שלך פעיל ל-30 ימים.\nתודה שבחרת בנו! 💕`);
+          const receiptNum = await getNextReceiptNumber();
+          const now = new Date();
+          const expiresAt = new Date(now.getTime() + 30 * 86400_000);
+          const fmt = (d: Date) => d.toLocaleDateString('he-IL');
+          await bot.telegram.sendMessage(userId,
+            `✅ התשלום התקבל! תודה שבחרת בנו! 💕\n\n` +
+            `🧾 *קבלה מספר ${receiptNum}*\n` +
+            `────────────────\n` +
+            `📅 תאריך: ${fmt(now)}\n` +
+            `📦 שירות: מנוי חודשי – עוזרת הריון\n` +
+            `💰 סכום: ₪19.90\n` +
+            `✅ תקף עד: ${fmt(expiresAt)}\n` +
+            `────────────────\n` +
+            `תשלום בוצע דרך PayPal`,
+            { parse_mode: 'Markdown' },
+          );
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
           res.end('<html><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>✅ התשלום התקבל!</h2><p>חזרי לטלגרם להמשך.</p></body></html>');
         } else {

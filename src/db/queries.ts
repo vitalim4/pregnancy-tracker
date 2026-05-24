@@ -281,6 +281,11 @@ export async function markRenewalReminderSent(userId: number) {
   );
 }
 
+export async function getNextReceiptNumber(): Promise<number> {
+  const { rows } = await pool.query(`SELECT nextval('receipt_number_seq') AS num`);
+  return rows[0].num;
+}
+
 // ── PayPal orders ──────────────────────────────────────────────────────────────
 
 export async function savePendingOrder(orderId: string, userId: number) {
